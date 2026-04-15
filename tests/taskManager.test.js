@@ -9,6 +9,7 @@ import {
   removeTask,
   filterTasks,
   filterByPriority,
+  sortTasks,
   countTasks,
   countCompleted,
   countPending,
@@ -378,6 +379,45 @@ describe('filterByPriority', () => {
     const result = filterByPriority(tasks, 'urgent');
 
     expect(result).toHaveLength(0);
+  });
+});
+
+describe('sortTasks', () => {
+  it('deve ordenar tarefas pendentes antes das concluídas', () => {
+    const tasks = [
+      { id: 1, title: 'Concluída', completed: true, priority: 'medium' },
+      { id: 2, title: 'Pendente', completed: false, priority: 'medium' },
+      { id: 3, title: 'Outra pendente', completed: false, priority: 'high' },
+    ];
+
+    const sorted = sortTasks(tasks);
+
+    expect(sorted[0].completed).toBe(false);
+    expect(sorted[1].completed).toBe(false);
+    expect(sorted[2].completed).toBe(true);
+  });
+
+  it('deve retornar um NOVO array (imutabilidade)', () => {
+    const tasks = [
+      { id: 1, title: 'A', completed: true, priority: 'medium' },
+      { id: 2, title: 'B', completed: false, priority: 'medium' },
+    ];
+
+    const sorted = sortTasks(tasks);
+
+    expect(sorted).not.toBe(tasks);
+  });
+
+  it('deve manter todos os elementos da lista', () => {
+    const tasks = [
+      { id: 1, title: 'A', completed: true, priority: 'medium' },
+      { id: 2, title: 'B', completed: false, priority: 'medium' },
+    ];
+
+    const sorted = sortTasks(tasks);
+
+    expect(sorted).toHaveLength(2);
+    expect(sorted.map((t) => t.id).sort()).toEqual([1, 2]);
   });
 });
 
