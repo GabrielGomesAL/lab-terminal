@@ -73,6 +73,10 @@ export function filterByPriority(tasks, priority) {
   return tasks.filter((task) => task.priority === priority);
 }
 
+export function sortTasks(tasks) {
+  return [...tasks].sort((a, b) => Number(a.completed) - Number(b.completed));
+}
+
 export function countTasks(tasks) {
   return tasks.length;
 }
