@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   validateTitle,
+  validatePriority,
   createTask,
   addTask,
   toggleTask,
   removeTask,
   filterTasks,
+  filterByPriority,
   countTasks,
   countCompleted,
   countPending,
@@ -58,6 +60,28 @@ describe('validateTitle', () => {
   });
 });
 
+describe('validatePriority', () => {
+  it('deve retornar true para high', () => {
+    expect(validatePriority('high')).toBe(true);
+  });
+
+  it('deve retornar true para medium', () => {
+    expect(validatePriority('medium')).toBe(true);
+  });
+
+  it('deve retornar true para low', () => {
+    expect(validatePriority('low')).toBe(true);
+  });
+
+  it('deve retornar false para prioridade inválida', () => {
+    expect(validatePriority('urgente')).toBe(false);
+  });
+
+  it('deve retornar false para null', () => {
+    expect(validatePriority(null)).toBe(false);
+  });
+});
+
 describe('createTask', () => {
   beforeEach(() => {
     resetId();
@@ -88,6 +112,18 @@ describe('createTask', () => {
     const task = createTask('  Título com espaços  ');
 
     expect(task.title).toBe('Título com espaços');
+  });
+
+  it('deve usar priority medium por padrão', () => {
+    const task = createTask('Tarefa padrão');
+
+    expect(task.priority).toBe('medium');
+  });
+
+  it('deve criar tarefa com priority informada', () => {
+    const task = createTask('Tarefa importante', 'high');
+
+    expect(task.priority).toBe('high');
   });
 });
 
@@ -269,6 +305,40 @@ describe('filterTasks', () => {
     const result = filterTasks(tasks, 'all');
 
     expect(result).not.toBe(tasks);
+  });
+});
+
+describe('filterByPriority', () => {
+  let tasks;
+
+  beforeEach(() => {
+    resetId();
+    tasks = [
+      createTask('Tarefa baixa', 'low'),
+      createTask('Tarefa média', 'medium'),
+      createTask('Tarefa alta', 'high'),
+      createTask('Outra alta', 'high'),
+    ];
+  });
+
+  it('deve retornar apenas tarefas high', () => {
+    const result = filterByPriority(tasks, 'high');
+
+    expect(result).toHaveLength(2);
+    result.forEach((t) => expect(t.priority).toBe('high'));
+  });
+
+  it('deve retornar apenas tarefas medium', () => {
+    const result = filterByPriority(tasks, 'medium');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe('medium');
+  });
+
+  it('deve retornar array vazio quando não houver prioridade', () => {
+    const result = filterByPriority(tasks, 'urgent');
+
+    expect(result).toHaveLength(0);
   });
 });
 
