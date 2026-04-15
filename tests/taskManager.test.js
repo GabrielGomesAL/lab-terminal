@@ -4,6 +4,7 @@ import {
   validatePriority,
   createTask,
   addTask,
+  isDuplicate,
   toggleTask,
   removeTask,
   filterTasks,
@@ -79,6 +80,32 @@ describe('validatePriority', () => {
 
   it('deve retornar false para null', () => {
     expect(validatePriority(null)).toBe(false);
+  });
+});
+
+describe('isDuplicate', () => {
+  it('deve retornar true para título exatamente igual', () => {
+    const tasks = [{ title: 'Estudar' }];
+
+    expect(isDuplicate(tasks, 'Estudar')).toBe(true);
+  });
+
+  it('deve retornar true ignorando maiúsculas e minúsculas', () => {
+    const tasks = [{ title: 'Estudar' }];
+
+    expect(isDuplicate(tasks, 'estudar')).toBe(true);
+  });
+
+  it('deve retornar true ignorando espaços extras', () => {
+    const tasks = [{ title: 'Estudar' }];
+
+    expect(isDuplicate(tasks, '  Estudar  ')).toBe(true);
+  });
+
+  it('deve retornar false para título diferente', () => {
+    const tasks = [{ title: 'Estudar' }];
+
+    expect(isDuplicate(tasks, 'Trabalhar')).toBe(false);
   });
 });
 
@@ -173,6 +200,18 @@ describe('addTask', () => {
 
   it('deve lançar erro para título numérico', () => {
     expect(() => addTask([], 42)).toThrow('Título inválido');
+  });
+
+  it('deve lançar erro para tarefa duplicada', () => {
+    const tasks = [{ id: 1, title: 'Estudar', completed: false, priority: 'medium' }];
+
+    expect(() => addTask(tasks, 'Estudar')).toThrow('Tarefa duplicada');
+  });
+
+  it('deve lançar erro para duplicata ignorando case', () => {
+    const tasks = [{ id: 1, title: 'Estudar', completed: false, priority: 'medium' }];
+
+    expect(() => addTask(tasks, 'estudar')).toThrow('Tarefa duplicada');
   });
 });
 
