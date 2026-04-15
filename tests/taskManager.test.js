@@ -10,6 +10,7 @@ import {
   filterTasks,
   filterByPriority,
   sortTasks,
+  searchTasks,
   countTasks,
   countCompleted,
   countPending,
@@ -87,25 +88,21 @@ describe('validatePriority', () => {
 describe('isDuplicate', () => {
   it('deve retornar true para título exatamente igual', () => {
     const tasks = [{ title: 'Estudar' }];
-
     expect(isDuplicate(tasks, 'Estudar')).toBe(true);
   });
 
   it('deve retornar true ignorando maiúsculas e minúsculas', () => {
     const tasks = [{ title: 'Estudar' }];
-
     expect(isDuplicate(tasks, 'estudar')).toBe(true);
   });
 
   it('deve retornar true ignorando espaços extras', () => {
     const tasks = [{ title: 'Estudar' }];
-
     expect(isDuplicate(tasks, '  Estudar  ')).toBe(true);
   });
 
   it('deve retornar false para título diferente', () => {
     const tasks = [{ title: 'Estudar' }];
-
     expect(isDuplicate(tasks, 'Trabalhar')).toBe(false);
   });
 });
@@ -132,25 +129,21 @@ describe('createTask', () => {
 
   it('deve iniciar com completed = false', () => {
     const task = createTask('Nova tarefa');
-
     expect(task.completed).toBe(false);
   });
 
   it('deve fazer trim do título', () => {
     const task = createTask('  Título com espaços  ');
-
     expect(task.title).toBe('Título com espaços');
   });
 
   it('deve usar priority medium por padrão', () => {
     const task = createTask('Tarefa padrão');
-
     expect(task.priority).toBe('medium');
   });
 
   it('deve criar tarefa com priority informada', () => {
     const task = createTask('Tarefa importante', 'high');
-
     expect(task.priority).toBe('high');
   });
 });
@@ -162,7 +155,6 @@ describe('addTask', () => {
 
   it('deve adicionar uma tarefa a uma lista vazia', () => {
     const tasks = addTask([], 'Primeira tarefa');
-
     expect(tasks).toHaveLength(1);
     expect(tasks[0].title).toBe('Primeira tarefa');
   });
@@ -205,13 +197,11 @@ describe('addTask', () => {
 
   it('deve lançar erro para tarefa duplicada', () => {
     const tasks = [{ id: 1, title: 'Estudar', completed: false, priority: 'medium' }];
-
     expect(() => addTask(tasks, 'Estudar')).toThrow('Tarefa duplicada');
   });
 
   it('deve lançar erro para duplicata ignorando case', () => {
     const tasks = [{ id: 1, title: 'Estudar', completed: false, priority: 'medium' }];
-
     expect(() => addTask(tasks, 'estudar')).toThrow('Tarefa duplicada');
   });
 });
@@ -224,7 +214,6 @@ describe('toggleTask', () => {
   it('deve marcar uma tarefa pendente como concluída', () => {
     const task = createTask('Tarefa pendente');
     const toggled = toggleTask(task);
-
     expect(toggled.completed).toBe(true);
   });
 
@@ -286,13 +275,11 @@ describe('removeTask', () => {
 
   it('deve retornar a lista completa se o ID não existir', () => {
     const updated = removeTask(tasks, 999);
-
     expect(updated).toHaveLength(3);
   });
 
   it('deve retornar array vazio ao remover de lista vazia', () => {
     const updated = removeTask([], 1);
-
     expect(updated).toHaveLength(0);
   });
 });
@@ -310,20 +297,17 @@ describe('filterTasks', () => {
 
   it('deve retornar todas as tarefas com filtro "all"', () => {
     const result = filterTasks(tasks, 'all');
-
     expect(result).toHaveLength(3);
   });
 
   it('deve retornar apenas pendentes com filtro "pending"', () => {
     const result = filterTasks(tasks, 'pending');
-
     expect(result).toHaveLength(2);
     result.forEach((t) => expect(t.completed).toBe(false));
   });
 
   it('deve retornar apenas concluídas com filtro "completed"', () => {
     const result = filterTasks(tasks, 'completed');
-
     expect(result).toHaveLength(1);
     expect(result[0].title).toBe('Tarefa 2');
     expect(result[0].completed).toBe(true);
@@ -331,7 +315,6 @@ describe('filterTasks', () => {
 
   it('deve retornar todas as tarefas para filtro desconhecido (default)', () => {
     const result = filterTasks(tasks, 'invalido');
-
     expect(result).toHaveLength(3);
   });
 
@@ -343,7 +326,6 @@ describe('filterTasks', () => {
 
   it('deve retornar um NOVO array (imutabilidade)', () => {
     const result = filterTasks(tasks, 'all');
-
     expect(result).not.toBe(tasks);
   });
 });
@@ -363,21 +345,18 @@ describe('filterByPriority', () => {
 
   it('deve retornar apenas tarefas high', () => {
     const result = filterByPriority(tasks, 'high');
-
     expect(result).toHaveLength(2);
     result.forEach((t) => expect(t.priority).toBe('high'));
   });
 
   it('deve retornar apenas tarefas medium', () => {
     const result = filterByPriority(tasks, 'medium');
-
     expect(result).toHaveLength(1);
     expect(result[0].priority).toBe('medium');
   });
 
   it('deve retornar array vazio quando não houver prioridade', () => {
     const result = filterByPriority(tasks, 'urgent');
-
     expect(result).toHaveLength(0);
   });
 });
@@ -404,7 +383,6 @@ describe('sortTasks', () => {
     ];
 
     const sorted = sortTasks(tasks);
-
     expect(sorted).not.toBe(tasks);
   });
 
@@ -418,6 +396,52 @@ describe('sortTasks', () => {
 
     expect(sorted).toHaveLength(2);
     expect(sorted.map((t) => t.id).sort()).toEqual([1, 2]);
+  });
+});
+
+describe('searchTasks', () => {
+  let tasks;
+
+  beforeEach(() => {
+    resetId();
+    tasks = [
+      createTask('Estudar JavaScript'),
+      createTask('Estudar Vitest'),
+      createTask('Comprar pão'),
+      createTask('Trabalhar no projeto'),
+    ];
+  });
+
+  it('deve encontrar tarefas pelo texto do título', () => {
+    const result = searchTasks(tasks, 'Estudar');
+
+    expect(result).toHaveLength(2);
+  });
+
+  it('deve ignorar maiúsculas e minúsculas', () => {
+    const result = searchTasks(tasks, 'javascript');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Estudar JavaScript');
+  });
+
+  it('deve retornar array vazio quando não houver correspondência', () => {
+    const result = searchTasks(tasks, 'academia');
+
+    expect(result).toHaveLength(0);
+  });
+
+  it('deve encontrar correspondências parciais', () => {
+    const result = searchTasks(tasks, 'proje');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Trabalhar no projeto');
+  });
+
+  it('deve retornar um NOVO array (imutabilidade)', () => {
+    const result = searchTasks(tasks, 'Estudar');
+
+    expect(result).not.toBe(tasks);
   });
 });
 
